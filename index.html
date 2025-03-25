@@ -42,8 +42,8 @@
     <div>
         <canvas id="canvas"></canvas>
     </div>
-    <script src="display.js"></script>
-    <script defer>
+    <script src="display.js" defer></script>
+    <script>
         const targetCoords = { lat: 37.7749, lon: -122.4194 }; // Example: San Francisco
 
         function getBearing(lat1, lon1, lat2, lon2) {
@@ -100,7 +100,7 @@
         }
 
         function checkDeviceOrientationSupport() {
-            document.getElementById("status").textContent = "Checking orientation support.";
+            // document.getElementById("status").textContent = "Checking orientation support.";
             if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
                 // iOS requires explicit permission
                 DeviceOrientationEvent.requestPermission()
@@ -151,7 +151,7 @@
             // document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             if (!addedListener) {
-                drawCompass(180,15,"test0");
+                drawCompass(90,15,"test0");
                 checkDeviceOrientationSupport();
                 drawCompass(0,15,"test1");
                 window.addEventListener('deviceorientation', handleOrientation);

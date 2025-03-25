@@ -3,6 +3,12 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+canvas.addEventListener("click", e => {
+    console.log("was clicked");
+    checkDeviceOrientationSupport();
+    console.log("did device orientation support");
+});
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
@@ -119,4 +125,4 @@ function drawCompass(angle, distance, test) {
 }
 
 // Example usage
-// drawCompass(45, 12.234); // Draws compass pointing at 45 degrees
+drawCompass(45, 12.234, "Test"); // Draws compass pointing at 45 degrees
