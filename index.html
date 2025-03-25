@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Directional Compass</title>
-    <style>
+    <!-- <style>
         body { text-align: center; font-family: Arial, sans-serif; }
         .compass-container { position: relative; width: 200px; height: 200px; margin: 50px auto; }
         .compass { width: 100%; height: 100%; }
@@ -13,39 +13,90 @@
             width: 10px; height: 100px; background: red;
             transform-origin: 50% 90%; transform: translate(-50%, -90%) rotate(0deg);
         }
+    </style> -->
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Make sure the body is the full height of the viewport */
+            height: -webkit-fill-available;
+            margin: 0; /* Remove any default margins on the body */
+        }
+        canvas {
+            width: fit-content;
+            height: fit-content;
+        }
     </style>
 </head>
 <body>
     <!-- <h1>Compass to Target</h1> -->
-    <p id="status">Getting location...</p>
+    <!-- <p id="status">Getting location...</p>
     <p id="status2"></p>
     <p id="status3"></p>
-    <button onclick="checkDeviceOrientationSupport()">check orientation support</button>
     <p id="angle"></p>
     <div class="compass-container">
         <img src="compass.png" class="compass" alt="Compass">
         <div class="needle" id="needle"></div>
+    </div> -->
+    <div>
+        <canvas id="canvas"></canvas>
     </div>
-    <script>
+    <script src="display.js" defer></script>
+    <script defer>
         const targetCoords = { lat: 37.7749, lon: -122.4194 }; // Example: San Francisco
 
         function getBearing(lat1, lon1, lat2, lon2) {
-            const toRad = deg => deg * Math.PI / 180;
-            const toDeg = rad => rad * 180 / Math.PI;
+            lat1 = toRadians(lat1);
+            lon1 = toRadians(lon1);
+            lat2 = toRadians(lat2);
+            lon2 = toRadians(lon2);
 
+            const deltaLon = lon2 - lon1;
+
+            const y = Math.sin(deltaLon) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(deltaLon);
+            let bearing = Math.atan2(y, x);
+
+            bearing = toDegrees(bearing);
+
+            bearing = (bearing + 360) % 360;
+
+            return bearing;
+        }
+
+        function toRadians(degrees) {
+            return degrees * Math.PI / 180;
+        }
+        function toDegrees(radians) {
+            return radians * 180 / Math.PI;
+        }
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the Earth in kilometers
+            const toRad = (angle) => (Math.PI * angle) / 180;
+
+            const dLat = toRad(lat2 - lat1);
             const dLon = toRad(lon2 - lon1);
-            const y = Math.sin(dLon) * Math.cos(toRad(lat2));
-            const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - 
-                      Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
-            return (toDeg(Math.atan2(y, x)) + 360) % 360;
+
+            const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            const distance = R * c;
+
+            return distance;
         }
 
         function updateNeedle(userHeading, targetBearing) {
-            document.getElementById("status2").textContent = `called updateneedle`;
-            document.getElementById("status3").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
+            // document.getElementById("status2").textContent = `called updateneedle`;
+            // document.getElementById("status3").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
             const rotation = (targetBearing - userHeading + 360) % 360;
+            drawCompass(rotation, distance);
             // document.getElementById("needle").style.transform = `translate(-50%, -90%) rotate(${rotation}deg)`;
-            document.getElementById("angle").textContent = `${rotation} degrees`;
+            // document.getElementById("angle").textContent = `${rotation} degrees`;
         }
 
         function checkDeviceOrientationSupport() {
@@ -56,31 +107,31 @@
                     .then(permissionState => {
                         if (permissionState === "granted") {
                             window.addEventListener("deviceorientation", handleOrientation);
-                            document.getElementById("status").textContent = "Orientation access granted.";
+                            // document.getElementById("status").textContent = "Orientation access granted.";
                         } else {
                             console.warn("Device orientation permission denied.");
-                            document.getElementById("status").textContent = "Device orientation access denied.";
+                            // document.getElementById("status").textContent = "Device orientation access denied.";
                         }
                     })
                     .catch(console.error);
             } else if ("ondeviceorientationabsolute" in window || "ondeviceorientation" in window) {
                 // Other devices (Android, most browsers) support it directly
                 window.addEventListener("deviceorientation", handleOrientation);
-                document.getElementById("status").textContent = "Orientation access granted.";
+                // document.getElementById("status").textContent = "Orientation access granted.";
             } else {
                 console.warn("Device orientation not supported.");
-                document.getElementById("status").textContent = "Device orientation not supported on this device.";
+                // document.getElementById("status").textContent = "Device orientation not supported on this device.";
             }
         }
 
         function handleOrientation(event) {
-            document.getElementById("status").textContent = `called handleorientation`;
+            // document.getElementById("status").textContent = `called handleorientation`;
             const heading = event.alpha || event.webkitCompassHeading;
             // document.getElementById("status").textContent = `${typeof heading}`;
             try {
                 updateNeedle(heading, targetBearing);
             } catch (error) {
-                document.getElementById("status2").textContent = `Error: ${error.message}`;
+                console.log(`Error: ${error.message}`);
             }
             // if (heading) {
             //     updateNeedle(heading, targetBearing);
@@ -89,20 +140,22 @@
             // }
         }
 
-        // Call this after user interaction (e.g., a button click on iOS)
-
         let addedListener = false;
         let targetBearing = 0;
+        let distance = 0;
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
-            document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+            // document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             if (!addedListener) {
+                checkDeviceOrientationSupport();
                 window.addEventListener('deviceorientation', handleOrientation);
-                targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
                 addedListener = true;
             }
+
+            targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
 
             //  => {
             //     if (event.alpha !== null) {
@@ -110,7 +163,7 @@
             //     }
             // });
         }, error => {
-            document.getElementById("status").textContent = "Unable to get location.";
+            // document.getElementById("status").textContent = "Unable to get location.";
         });
 
         // checkDeviceOrientationSupport();
