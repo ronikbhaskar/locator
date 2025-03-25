@@ -19,6 +19,7 @@
     <!-- <h1>Compass to Target</h1> -->
     <p id="status">Getting location...</p>
     <p id="status2"></p>
+    <p id="status3"></p>
     <button onclick="checkDeviceOrientationSupport()">check orientation support</button>
     <p id="angle"></p>
     <div class="compass-container">
@@ -40,8 +41,8 @@
         }
 
         function updateNeedle(userHeading, targetBearing) {
-            document.getElementById("status").textContent = `called updateneedle`;
-            document.getElementById("status2").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
+            document.getElementById("status2").textContent = `called updateneedle`;
+            document.getElementById("status3").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
             const rotation = (targetBearing - userHeading + 360) % 360;
             // document.getElementById("needle").style.transform = `translate(-50%, -90%) rotate(${rotation}deg)`;
             document.getElementById("angle").textContent = `${rotation} degrees`;
@@ -76,7 +77,11 @@
             document.getElementById("status").textContent = `called handleorientation`;
             const heading = event.alpha || event.webkitCompassHeading;
             // document.getElementById("status").textContent = `${typeof heading}`;
-            updateNeedle(heading, targetBearing);
+            try {
+                updateNeedle(heading, targetBearing);
+            } catch (error) {
+                document.getElementById("status2").textContent = `Error: ${error.message}`;
+            }
             // if (heading) {
             //     updateNeedle(heading, targetBearing);
             // } else {
