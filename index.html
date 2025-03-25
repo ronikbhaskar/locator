@@ -42,6 +42,7 @@
             const rotation = (targetBearing - userHeading + 360) % 360;
             document.getElementById("needle").style.transform = `translate(-50%, -90%) rotate(${rotation}deg)`;
             document.getElementById("angle").textContent = `${rotation} degrees`;
+            document.getElementById("status").textContent = `updated needle`;
         }
 
         function checkDeviceOrientationSupport() {
@@ -72,7 +73,6 @@
         function handleOrientation(event) {
             const heading = event.alpha || event.webkitCompassHeading;
             if (heading !== null && heading !== undefined) {
-                document.getElementById("status").textContent = "Orientation detected!";
                 updateNeedle(heading, targetBearing);
             } else {
                 document.getElementById("status").textContent = "No orientation data available.";
@@ -88,7 +88,6 @@
             document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             const targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
-            document.getElementById("angle").textContent = `${targetBearing} degrees`;
 
             if (!addedListener) {
                 window.addEventListener('deviceorientation', handleOrientation);
