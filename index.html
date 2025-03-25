@@ -90,6 +90,8 @@
             return distance;
         }
 
+        let hasOrientationPermission = false;
+
         function checkDeviceOrientationSupport() {
             // document.getElementById("status").textContent = "Checking orientation support.";
             if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
@@ -97,21 +99,17 @@
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === "granted") {
-                            // window.addEventListener("deviceorientation", handleOrientation);
+                            window.addEventListener("deviceorientation", handleOrientation);
+                            hasOrientationPermission = true;
                             // document.getElementById("status").textContent = "Orientation access granted.";
-                        } else {
-                            console.warn("Device orientation permission denied.");
-                            // document.getElementById("status").textContent = "Device orientation access denied.";
-                        }
+                        } 
                     })
                     .catch(console.error);
             } else if ("ondeviceorientationabsolute" in window || "ondeviceorientation" in window) {
                 // Other devices (Android, most browsers) support it directly
-                // window.addEventListener("deviceorientation", handleOrientation);
+                window.addEventListener("deviceorientation", handleOrientation);
+                hasOrientationPermission = true;
                 // document.getElementById("status").textContent = "Orientation access granted.";
-            } else {
-                console.warn("Device orientation not supported.");
-                // document.getElementById("status").textContent = "Device orientation not supported on this device.";
             }
         }
 
@@ -119,9 +117,9 @@
         const ctx = canvas.getContext("2d");
 
         canvas.addEventListener("click", e => {
-            console.log("was clicked");
-            checkDeviceOrientationSupport();
-            console.log("did device orientation support");
+            if (!hasOrientationPermission) {
+                checkDeviceOrientationSupport();
+            }
         });
 
         canvas.width = window.innerWidth;
@@ -131,7 +129,7 @@
         const centerY = canvas.height / 2.2;
         const radius = Math.min(canvas.width, canvas.height) * 0.4;
 
-        function drawCompass(angle, distance, test) {
+        function drawCompass(angle, distance, error) {
 
             // Set canvas size dynamically
             // Clear canvas
@@ -231,19 +229,26 @@
             ctx.fillStyle = "#ccc";
             ctx.font = `${radius * 0.3}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif`;  // Scale text size
             ctx.textAlign = "center";
-            ctx.fillText(test, centerX, centerY + radius + radius * 0.4);
-            // if (distance < 10) {
-            //     ctx.fillText(`${distance.toFixed(2)} km`, centerX, centerY + radius + radius * 0.4);
-            // } else {
-            //     ctx.fillText(`${distance.toFixed(1)} km`, centerX, centerY + radius + radius * 0.4);
-            // }
+
+            if (!error) {
+                if (distance < 10) {
+                    ctx.fillText(`${distance.toFixed(2)} km`, centerX, centerY + radius + radius * 0.4);
+                } else if (distance < 100) {
+                    ctx.fillText(`${distance.toFixed(1)} km`, centerX, centerY + radius + radius * 0.4);
+                } else {
+                    ctx.fillText(`${distance.toFixed(0)} km`, centerX, centerY + radius + radius * 0.4);
+                }
+            } else {
+                ctx.fillText(error, centerX, centerY + radius + radius * 0.4);
+            }
+            
         }
 
         function updateNeedle(userHeading, targetBearing) {
             // document.getElementById("status2").textContent = `called updateneedle`;
             // document.getElementById("status3").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
             const rotation = (targetBearing - userHeading + 360) % 360;
-            drawCompass(rotation, distance, `${userHeading.toFixed(1)}, ${targetBearing.toFixed(1)}`);
+            drawCompass(rotation, distance);
             // document.getElementById("needle").style.transform = `translate(-50%, -90%) rotate(${rotation}deg)`;
             // document.getElementById("angle").textContent = `${rotation} degrees`;
         }
@@ -251,12 +256,14 @@
         function handleOrientation(event) {
             // document.getElementById("status").textContent = `called handleorientation`;
             const heading =  event.webkitCompassHeading; // || event.alpha;
-            // document.getElementById("status").textContent = `${typeof heading}`;
-            try {
+            if (heading && hasOrientationPermission) {
                 updateNeedle(heading, targetBearing);
-            } catch (error) {
-                drawCompass(135, 0, `Error: ${error.message}`);
+            } else if (!hasOrientationPermission) {
+                drawCompass(0, 0, "Tap the screen to begin...");
+            } else {
+                drawCompass(0, 0, `Unable to find North`);
             }
+            // document.getElementById("status").textContent = `${typeof heading}`;
             // if (heading) {
             //     updateNeedle(heading, targetBearing);
             // } else {
@@ -268,19 +275,12 @@
         let targetBearing = 0;
         let distance = 0;
 
-        drawCompass(180,15,"test2");
+        drawCompass(0, 0, "Tap the screen to begin...")
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             // document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
-            if (!addedListener) {
-                drawCompass(90,15,"test0");
-                checkDeviceOrientationSupport();
-                drawCompass(0,15,"test1");
-                window.addEventListener('deviceorientation', handleOrientation);
-                addedListener = true;
-            }
             targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
             distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
 
