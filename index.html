@@ -250,12 +250,12 @@
 
         function handleOrientation(event) {
             // document.getElementById("status").textContent = `called handleorientation`;
-            const heading = event.alpha || event.webkitCompassHeading;
+            const heading =  event.webkitCompassHeading; // || event.alpha;
             // document.getElementById("status").textContent = `${typeof heading}`;
             try {
                 updateNeedle(heading, targetBearing);
             } catch (error) {
-                console.log(`Error: ${error.message}`);
+                drawCompass(135, 0, `Error: ${error.message}`);
             }
             // if (heading) {
             //     updateNeedle(heading, targetBearing);
