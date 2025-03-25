@@ -42,7 +42,7 @@
     <div>
         <canvas id="canvas"></canvas>
     </div>
-    <script src="display.js" defer></script>
+    <script src="display.js"></script>
     <script defer>
         const targetCoords = { lat: 37.7749, lon: -122.4194 }; // Example: San Francisco
 
@@ -144,12 +144,16 @@
         let targetBearing = 0;
         let distance = 0;
 
+        drawCompass(180,15,"test2");
+
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             // document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             if (!addedListener) {
+                drawCompass(180,15,"test0");
                 checkDeviceOrientationSupport();
+                drawCompass(0,15,"test1");
                 window.addEventListener('deviceorientation', handleOrientation);
                 addedListener = true;
             }

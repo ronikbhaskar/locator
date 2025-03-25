@@ -10,7 +10,7 @@ const centerX = canvas.width / 2;
 const centerY = canvas.height / 2.2;
 const radius = Math.min(canvas.width, canvas.height) * 0.4;
 
-function drawCompass(angle, distance) {
+function drawCompass(angle, distance, test) {
 
     // Set canvas size dynamically
     // Clear canvas
@@ -110,12 +110,13 @@ function drawCompass(angle, distance) {
     ctx.fillStyle = "#ccc";
     ctx.font = `${radius * 0.3}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif`;  // Scale text size
     ctx.textAlign = "center";
-    if (distance < 10) {
-        ctx.fillText(`${distance.toFixed(2)} km`, centerX, centerY + radius + radius * 0.4);
-    } else {
-        ctx.fillText(`${distance.toFixed(1)} km`, centerX, centerY + radius + radius * 0.4);
-    }
+    ctx.fillText(test, centerX, centerY + radius + radius * 0.4);
+    // if (distance < 10) {
+    //     ctx.fillText(`${distance.toFixed(2)} km`, centerX, centerY + radius + radius * 0.4);
+    // } else {
+    //     ctx.fillText(`${distance.toFixed(1)} km`, centerX, centerY + radius + radius * 0.4);
+    // }
 }
 
 // Example usage
-drawCompass(45, 12.234); // Draws compass pointing at 45 degrees
+// drawCompass(45, 12.234); // Draws compass pointing at 45 degrees
