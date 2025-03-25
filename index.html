@@ -18,6 +18,7 @@
 <body>
     <!-- <h1>Compass to Target</h1> -->
     <p id="status">Getting location...</p>
+    <button onclick="checkDeviceOrientationSupport()">check orientation support</button>
     <p id="angle"></p>
     <div class="compass-container">
         <img src="compass.png" class="compass" alt="Compass">
@@ -44,12 +45,14 @@
         }
 
         function checkDeviceOrientationSupport() {
+            document.getElementById("status").textContent = "Checking orientation support.";
             if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
                 // iOS requires explicit permission
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === "granted") {
                             window.addEventListener("deviceorientation", handleOrientation);
+                            document.getElementById("status").textContent = "Orientation access granted.";
                         } else {
                             console.warn("Device orientation permission denied.");
                             document.getElementById("status").textContent = "Device orientation access denied.";
@@ -59,6 +62,7 @@
             } else if ("ondeviceorientationabsolute" in window || "ondeviceorientation" in window) {
                 // Other devices (Android, most browsers) support it directly
                 window.addEventListener("deviceorientation", handleOrientation);
+                document.getElementById("status").textContent = "Orientation access granted.";
             } else {
                 console.warn("Device orientation not supported.");
                 document.getElementById("status").textContent = "Device orientation not supported on this device.";
@@ -66,16 +70,18 @@
         }
 
         function handleOrientation(event) {
-            if (event.alpha !== null) {
+            const heading = event.alpha || event.webkitCompassHeading;
+            if (heading !== null && heading !== undefined) {
                 document.getElementById("status").textContent = "Orientation detected!";
-                updateNeedle(event.alpha, targetBearing);
+                updateNeedle(heading, targetBearing);
             } else {
                 document.getElementById("status").textContent = "No orientation data available.";
             }
         }
 
         // Call this after user interaction (e.g., a button click on iOS)
-        checkDeviceOrientationSupport();
+
+        let addedListener = false;
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
@@ -84,7 +90,11 @@
             const targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
             document.getElementById("angle").textContent = `${targetBearing} degrees`;
 
-            window.addEventListener('deviceorientation', handleOrientation);
+            if (!addedListener) {
+                window.addEventListener('deviceorientation', handleOrientation);
+                addedListener = true;
+            }
+
             //  => {
             //     if (event.alpha !== null) {
             //         updateNeedle(event.alpha, targetBearing);
