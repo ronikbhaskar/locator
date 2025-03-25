@@ -75,12 +75,13 @@
         function handleOrientation(event) {
             document.getElementById("status").textContent = `called handleorientation`;
             const heading = event.alpha || event.webkitCompassHeading;
-            document.getElementById("status").textContent = `${typeof heading}`;
-            if (heading) {
-                updateNeedle(heading, targetBearing);
-            } else {
-                document.getElementById("status").textContent = "No orientation data available.";
-            }
+            // document.getElementById("status").textContent = `${typeof heading}`;
+            updateNeedle(heading, targetBearing);
+            // if (heading) {
+            //     updateNeedle(heading, targetBearing);
+            // } else {
+            //     document.getElementById("status").textContent = "No orientation data available.";
+            // }
         }
 
         // Call this after user interaction (e.g., a button click on iOS)
