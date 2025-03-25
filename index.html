@@ -92,15 +92,15 @@
         // Call this after user interaction (e.g., a button click on iOS)
 
         let addedListener = false;
+        let targetBearing = 0;
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
-            const targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
-
             if (!addedListener) {
                 window.addEventListener('deviceorientation', handleOrientation);
+                targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
                 addedListener = true;
             }
 
