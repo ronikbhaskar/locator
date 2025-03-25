@@ -48,6 +48,7 @@
             document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             const targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            document.getElementById("angle").textContent = `${targetBearing} degrees`;
 
             window.addEventListener('deviceorientation', event => {
                 if (event.alpha !== null) {
