@@ -284,7 +284,7 @@
             try {
                 targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
                 distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
-                drawCompass(270,0,`${latitude}, ${longitude}`)
+                drawCompass(270,0,`${targetBearing.toFixed(1)}, ${distance.toFixed(1)}`)
             } catch (error) {
                 drawCompass(270,0,`${error.message}`)
             }
