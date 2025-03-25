@@ -43,6 +43,40 @@
             document.getElementById("angle").textContent = `${rotation} degrees`;
         }
 
+        function checkDeviceOrientationSupport() {
+            if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+                // iOS requires explicit permission
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === "granted") {
+                            window.addEventListener("deviceorientation", handleOrientation);
+                        } else {
+                            console.warn("Device orientation permission denied.");
+                            document.getElementById("status").textContent = "Device orientation access denied.";
+                        }
+                    })
+                    .catch(console.error);
+            } else if ("ondeviceorientationabsolute" in window || "ondeviceorientation" in window) {
+                // Other devices (Android, most browsers) support it directly
+                window.addEventListener("deviceorientation", handleOrientation);
+            } else {
+                console.warn("Device orientation not supported.");
+                document.getElementById("status").textContent = "Device orientation not supported on this device.";
+            }
+        }
+
+        function handleOrientation(event) {
+            if (event.alpha !== null) {
+                document.getElementById("status").textContent = "Orientation detected!";
+                updateNeedle(event.alpha, targetBearing);
+            } else {
+                document.getElementById("status").textContent = "No orientation data available.";
+            }
+        }
+
+        // Call this after user interaction (e.g., a button click on iOS)
+        checkDeviceOrientationSupport();
+
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
@@ -50,14 +84,18 @@
             const targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
             document.getElementById("angle").textContent = `${targetBearing} degrees`;
 
-            window.addEventListener('deviceorientation', event => {
-                if (event.alpha !== null) {
-                    updateNeedle(event.alpha, targetBearing);
-                }
-            });
+            window.addEventListener('deviceorientation', handleOrientation);
+            //  => {
+            //     if (event.alpha !== null) {
+            //         updateNeedle(event.alpha, targetBearing);
+            //     }
+            // });
         }, error => {
             document.getElementById("status").textContent = "Unable to get location.";
         });
+
+        // checkDeviceOrientationSupport();
+
     </script>
 </body>
 </html>
