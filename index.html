@@ -157,9 +157,12 @@
                 window.addEventListener('deviceorientation', handleOrientation);
                 addedListener = true;
             }
-
-            targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
-            distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            try {
+                targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
+                distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            } catch (error) {
+                drawCompass(270,0,`${error.message}`)
+            }
 
             //  => {
             //     if (event.alpha !== null) {
