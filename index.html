@@ -75,7 +75,8 @@
         function handleOrientation(event) {
             document.getElementById("status").textContent = `called handleorientation`;
             const heading = event.alpha || event.webkitCompassHeading;
-            if (heading !== null && heading !== undefined) {
+            document.getElementById("status").textContent = `${typeof heading}`;
+            if (heading) {
                 updateNeedle(heading, targetBearing);
             } else {
                 document.getElementById("status").textContent = "No orientation data available.";
