@@ -242,7 +242,7 @@
         function updateNeedle(userHeading, targetBearing) {
             // document.getElementById("status2").textContent = `called updateneedle`;
             // document.getElementById("status3").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
-            const rotation = (targetBearing + userHeading + 360) % 360;
+            const rotation = (targetBearing - userHeading + 360) % 360;
             drawCompass(rotation, distance, `${userHeading.toFixed(1)}, ${targetBearing.toFixed(1)}`);
             // document.getElementById("needle").style.transform = `translate(-50%, -90%) rotate(${rotation}deg)`;
             // document.getElementById("angle").textContent = `${rotation} degrees`;
