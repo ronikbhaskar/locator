@@ -42,9 +42,41 @@
     <div>
         <canvas id="canvas"></canvas>
     </div>
-    <script src="display.js" defer></script>
     <script defer>
-        const targetCoords = { lat: 37.7749, lon: -122.4194 }; // Example: San Francisco
+        function encodeCoordinates(lat, lon) {
+            const factor = 1e6; // Precision factor
+            const encoded = Math.round((lat + 90) * factor) * 360000000 + Math.round((lon + 180) * factor);
+            return encoded.toString();
+        }
+
+        function decodeCoordinates(encoded) {
+            const factor = 1e6;
+            const bigLat = Math.floor(encoded / 360000000);
+            const bigLon = encoded % 360000000;
+            const lat = (bigLat / factor) - 90;
+            const lon = (bigLon / factor) - 180;
+            return { lat: lat, lon: lon };
+        }
+
+        function getTargetCoordinates() {
+            const params = new URLSearchParams(window.location.search);
+            const loc = parseInt(params.get("loc"));
+            if (isNaN(loc)) {
+                return null;
+            }
+            const decoded = decodeCoordinates(loc);
+            const lat = decoded.lat;
+            const lon = decoded.lon;
+
+            // Ensure valid numeric values, else return null
+            if (isNaN(lat) || isNaN(lon)) {
+                return null;
+            }
+
+            return { lat: lat, lon: lon };
+        }
+
+        const targetCoords =  getTargetCoordinates();
 
         function getBearing(lat1, lon1, lat2, lon2) {
             lat1 = toRadians(lat1);
@@ -259,9 +291,9 @@
             if (heading && hasOrientationPermission) {
                 updateNeedle(heading, targetBearing);
             } else if (!hasOrientationPermission) {
-                drawCompass(0, 0, "Tap the screen to begin...");
+                drawCompass(0, 0, `Tap the screen`);
             } else {
-                drawCompass(0, 0, `Unable to find North`);
+                drawCompass(0, 0, `Unable to\nfind North`);
             }
             // document.getElementById("status").textContent = `${typeof heading}`;
             // if (heading) {
@@ -275,7 +307,7 @@
         let targetBearing = 0;
         let distance = 0;
 
-        drawCompass(0, 0, "Tap the screen to begin...")
+        drawCompass(0, 0, "Tap the screen")
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
