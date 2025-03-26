@@ -59,6 +59,19 @@
 
         const targetCoords =  getTargetCoordinates();
 
+        function getBearingPlanar(lat1, lon1, lat2, lon2) {
+            lat1 = toRadians(lat1);
+            lon1 = toRadians(lon1);
+            lat2 = toRadians(lat2);
+            lon2 = toRadians(lon2);
+
+            let bearing = Math.atan2(lat2 - lat1, lon2 - lon1);
+            bearing = toDegrees(bearing);
+            bearing = (bearing + 360) % 360;
+
+            return bearing;
+        }
+
         function getBearing(lat1, lon1, lat2, lon2) {
             lat1 = toRadians(lat1);
             lon1 = toRadians(lon1);
@@ -262,7 +275,7 @@
             if (heading && hasOrientationPermission) {
                 updateNeedle(heading, targetBearing);
             } else if (!hasOrientationPermission) {
-                drawCompass(0, 0, `Tap the screen`);
+                drawCompass(0, 0, `tap the screen`);
             } else {
                 drawCompass(0, 0, `Can't find North`);
             }
@@ -273,7 +286,7 @@
             if (heading && hasOrientationPermission) {
                 updateNeedle(heading, targetBearing);
             } else if (!hasOrientationPermission) {
-                drawCompass(0, 0, `Tap the screen`);
+                drawCompass(0, 0, `tap the screen`);
             } else {
                 drawCompass(0, 0, `Can't find North`);
             }
@@ -283,13 +296,16 @@
         let targetBearing = 0;
         let distance = 0;
 
-        drawCompass(0, 0, "Tap the screen")
+        drawCompass(0, 0, "tap the screen")
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
-
-            targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
             distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            if (distance < 1) {
+                targetBearing = getBearingPlanar(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            } else {
+                targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
+            }
 
         }, error => { });
 
