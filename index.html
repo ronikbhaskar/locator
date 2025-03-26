@@ -3,25 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Directional Compass</title>
-    <!-- <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        .compass-container { position: relative; width: 200px; height: 200px; margin: 50px auto; }
-        .compass { width: 100%; height: 100%; }
-        .needle {
-            position: absolute; top: 50%; left: 50%;
-            width: 10px; height: 100px; background: red;
-            transform-origin: 50% 90%; transform: translate(-50%, -90%) rotate(0deg);
-        }
-    </style> -->
+    <title>Locator</title>
     <style>
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Make sure the body is the full height of the viewport */
+            height: 100vh;
             height: -webkit-fill-available;
-            margin: 0; /* Remove any default margins on the body */
+            margin: 0;
         }
         canvas {
             width: fit-content;
@@ -30,15 +20,6 @@
     </style>
 </head>
 <body>
-    <!-- <h1>Compass to Target</h1> -->
-    <!-- <p id="status">Getting location...</p>
-    <p id="status2"></p>
-    <p id="status3"></p>
-    <p id="angle"></p>
-    <div class="compass-container">
-        <img src="compass.png" class="compass" alt="Compass">
-        <div class="needle" id="needle"></div>
-    </div> -->
     <div>
         <canvas id="canvas"></canvas>
     </div>
@@ -125,23 +106,19 @@
         let hasOrientationPermission = false;
 
         function checkDeviceOrientationSupport() {
-            // document.getElementById("status").textContent = "Checking orientation support.";
             if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
-                // iOS requires explicit permission
+                /* iOS requires explicit permission */
                 DeviceOrientationEvent.requestPermission()
                     .then(permissionState => {
                         if (permissionState === "granted") {
                             window.addEventListener("deviceorientation", handleOrientation);
                             hasOrientationPermission = true;
-                            // document.getElementById("status").textContent = "Orientation access granted.";
                         } 
                     })
                     .catch(console.error);
             } else if ("ondeviceorientationabsolute" in window || "ondeviceorientation" in window) {
-                // Other devices (Android, most browsers) support it directly
-                window.addEventListener("deviceorientation", handleOrientation);
+                window.addEventListener("deviceorientationabsolute", handleOrientationAbsolute);
                 hasOrientationPermission = true;
-                // document.getElementById("status").textContent = "Orientation access granted.";
             }
         }
 
@@ -163,12 +140,11 @@
 
         function drawCompass(angle, distance, error) {
 
-            // Set canvas size dynamically
             // Clear canvas
-            ctx.fillStyle = "#111";  // Dark background
+            ctx.fillStyle = "#111"; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw notches
+            /* Draw notches */
             for (let i = 0; i < 360; i += 30) {
                 const angleRad = (i * Math.PI) / 180;
                 const innerRadius = i % 90 === 0 ? radius * 0.85 : radius * 0.9; // Longer marks at 90 degrees
@@ -185,14 +161,14 @@
                 ctx.stroke();
             }
 
-            // Draw outer circle
+            /* Draw outer circle */
             ctx.strokeStyle = "#bbb";
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.stroke();
 
-            // Draw center cross
+            /* Draw center cross */
             ctx.strokeStyle = "#bbb";
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -202,7 +178,7 @@
             ctx.lineTo(centerX, centerY + radius * 0.3);
             ctx.stroke();
 
-            // Add subtle radial gradient for depth effect
+            /* Add subtle radial gradient for depth effect */
             const gradient = ctx.createRadialGradient(centerX, centerY, radius * 0.2, centerX, centerY, radius);
             gradient.addColorStop(0, "rgba(255, 255, 255, 0.05)");
             gradient.addColorStop(1, "rgba(0, 0, 0, 0.2)");
@@ -212,12 +188,12 @@
             ctx.fill();
 
 
-            // Draw needle as two triangles
+            /* Draw needle as two triangles */
             const needleLength = radius * 0.9;
             const needleWidth = radius * 0.05;
             const angleRad = ((angle - 90) * Math.PI) / 180; // Offset by 90° so 0° points up
 
-            // Compute triangle points
+            /* Compute triangle points */
             function getTrianglePoints(baseX, baseY, tipX, tipY, width) {
                 const dx = tipX - baseX;
                 const dy = tipY - baseY;
@@ -239,7 +215,7 @@
             const redTriangle = getTrianglePoints(centerX, centerY, redTipX, redTipY, needleWidth);
             const grayTriangle = getTrianglePoints(centerX, centerY, grayTipX, grayTipY, needleWidth);
 
-            // Draw red side of the needle
+            /* Draw red side of the needle */
             ctx.fillStyle = "red";
             ctx.beginPath();
             ctx.moveTo(redTriangle[0].x, redTriangle[0].y);
@@ -248,7 +224,7 @@
             ctx.closePath();
             ctx.fill();
 
-            // Draw gray side of the needle
+            /* Draw gray side of the needle */
             ctx.fillStyle = "#666";
             ctx.beginPath();
             ctx.moveTo(grayTriangle[0].x, grayTriangle[0].y);
@@ -257,7 +233,7 @@
             ctx.closePath();
             ctx.fill();
 
-            // Draw distance below compass
+            /* Draw distance below compass */
             ctx.fillStyle = "#ccc";
             ctx.font = `${radius * 0.3}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif`;  // Scale text size
             ctx.textAlign = "center";
@@ -270,37 +246,37 @@
                 } else {
                     ctx.fillText(`${distance.toFixed(0)} km`, centerX, centerY + radius + radius * 0.4);
                 }
-            } else {
+            } else { // overwrites distance with error message if there is one
                 ctx.fillText(error, centerX, centerY + radius + radius * 0.4);
             }
             
         }
 
         function updateNeedle(userHeading, targetBearing) {
-            // document.getElementById("status2").textContent = `called updateneedle`;
-            // document.getElementById("status3").textContent = `userheading: ${typeof userHeading}, targetbearing: ${typeof targetBearing}`;
             const rotation = (targetBearing - userHeading + 360) % 360;
             drawCompass(rotation, distance);
-            // document.getElementById("needle").style.transform = `translate(-50%, -90%) rotate(${rotation}deg)`;
-            // document.getElementById("angle").textContent = `${rotation} degrees`;
         }
 
         function handleOrientation(event) {
-            // document.getElementById("status").textContent = `called handleorientation`;
-            const heading =  event.webkitCompassHeading; // || event.alpha;
+            const heading = event.webkitCompassHeading;
             if (heading && hasOrientationPermission) {
                 updateNeedle(heading, targetBearing);
             } else if (!hasOrientationPermission) {
                 drawCompass(0, 0, `Tap the screen`);
             } else {
-                drawCompass(0, 0, `Unable to\nfind North`);
+                drawCompass(0, 0, `Can't find North`);
             }
-            // document.getElementById("status").textContent = `${typeof heading}`;
-            // if (heading) {
-            //     updateNeedle(heading, targetBearing);
-            // } else {
-            //     document.getElementById("status").textContent = "No orientation data available.";
-            // }
+        }
+
+        function handleOrientationAbsolute(event) {
+            const heading = event.alpha;
+            if (heading && hasOrientationPermission) {
+                updateNeedle(heading, targetBearing);
+            } else if (!hasOrientationPermission) {
+                drawCompass(0, 0, `Tap the screen`);
+            } else {
+                drawCompass(0, 0, `Can't find North`);
+            }
         }
 
         let addedListener = false;
@@ -311,23 +287,11 @@
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
-            // document.getElementById("status").textContent = `Your Location: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 
             targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
             distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
 
-            //  => {
-            //     if (event.alpha !== null) {
-            //         updateNeedle(event.alpha, targetBearing);
-            //     }
-            // });
-        }, error => {
-            // document.getElementById("status").textContent = "Unable to get location.";
-        });
-
-        // checkDeviceOrientationSupport();
-
-
+        }, error => { });
 
     </script>
 </body>
