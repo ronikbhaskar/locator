@@ -296,12 +296,16 @@
         let targetBearing = 0;
         let distance = 0;
 
-        drawCompass(0, 0, "tap the screen")
+        if (targetCoords) {
+            drawCompass(0, 0, "tap the screen")
+        } else {
+            drawCompass(0, 0, "no destination")
+        }
 
         navigator.geolocation.watchPosition(position => {
             const { latitude, longitude } = position.coords;
             distance = haversineDistance(latitude, longitude, targetCoords.lat, targetCoords.lon);
-            if (distance < 1) {
+            if (distance < 0.5) {
                 targetBearing = getBearingPlanar(latitude, longitude, targetCoords.lat, targetCoords.lon);
             } else {
                 targetBearing = getBearing(latitude, longitude, targetCoords.lat, targetCoords.lon);
