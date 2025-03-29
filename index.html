@@ -129,7 +129,7 @@
                         } 
                     })
                     .catch(console.error);
-            } else if ("ondeviceorientationabsolute" in window || "ondeviceorientation" in window) {
+            } else if ("ondeviceorientationabsolute" in window) {
                 window.addEventListener("deviceorientationabsolute", handleOrientationAbsolute);
                 hasOrientationPermission = true;
             }

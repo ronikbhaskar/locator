@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locator Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input, button, textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #encodedOutput {
+            background: #e9ecef;
+            cursor: pointer;
+            resize: none;
+            height: 50px;
+        }
+        .example {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Locator Creator</h2>
+        <input type="number" id="latitude" placeholder="Enter Latitude" step="any">
+        <input type="number" id="longitude" placeholder="Enter Longitude" step="any">
+        <button onclick="encodeAndDisplay()">Create Locator</button>
+        <textarea id="encodedOutput" readonly onclick="copyToClipboard()"></textarea>
+        <p class="example">Example: Christ the Redeemer is at -22.9519, -43.2105</p>
+    </div>
+    <script>
+        function encodeCoordinates(lat, lon) {
+            const factor = 1e6;
+            const encoded = Math.round((lat + 90) * factor) * 360000000 + Math.round((lon + 180) * factor);
+            return encoded.toString();
+        }
+        
+        function encodeAndDisplay() {
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            
+            if (isNaN(lat) || isNaN(lon)) {
+                alert("Please enter valid latitude and longitude.");
+                return;
+            }
+            
+            document.getElementById('encodedOutput').value = `https://ronikbhaskar.github.io/locator/?loc=${encodeCoordinates(lat, lon)}`;
+        }
+        
+        function copyToClipboard() {
+            const outputField = document.getElementById('encodedOutput');
+            outputField.select();
+            outputField.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            alert("Copied to clipboard: " + outputField.value);
+        }
+    </script>
+</body>
+</html>
